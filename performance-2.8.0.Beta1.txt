@@ -1,0 +1,19 @@
+Athlon X2 4200+, Ubuntu 9.10
+
+Scene 1, 320x240, NORMAL
+
+[info] Running net.dlicht.App 
+Init Scene:        526ms
+Rendering:         1243ms
+Wrote out/test_00000.tga
+File output:       17ms
+
+
+
+Scene 1, 800x600, -server, High, Lightsources as Arrays:
+
+Init Scene:        327ms
+Rendering:         15382ms
+Wrote out/test_00000.tga
+File output:       68ms
+

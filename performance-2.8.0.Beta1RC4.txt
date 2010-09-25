@@ -1,0 +1,25 @@
+Rev 176, Notebook, Windows 7, Scala 2.8.0.Beta1.RC4
+
+D:\dev\jvm\scala\scala-ray>java -jar target\scala-ray-1.0-SNAPSHOT.jar
+Texture processing: 828ms
+Loaded texture: 4096x2048 pixels
+Init Scene:        1416ms
+Rendering:         8448ms
+Wrote out/test_00000.tga
+File output:       23ms
+
+D:\dev\jvm\scala\scala-ray>java -server -jar target\scala-ray-1.0-SNAPSHOT.jar
+Texture processing: 1008ms
+Loaded texture: 4096x2048 pixels
+Init Scene:        1869ms
+Rendering:         4896ms
+Wrote out/test_00000.tga
+File output:       302ms
+
+D:\dev\jvm\scala\scala-ray>java -server -jar target\scala-ray-1.0-SNAPSHOT.jar
+Texture processing: 938ms
+Loaded texture: 4096x2048 pixels
+Init Scene:        1661ms
+Rendering:         4649ms
+Wrote out/test_00000.tga
+File output:       45ms

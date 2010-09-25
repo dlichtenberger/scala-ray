@@ -1,0 +1,56 @@
+scala-ray README
+================
+
+A basic raytracer written in Scala.
+
+Author:     Daniel Lichtenberger (daniel.lichtenberger@gmail.com)
+License:    GPL3 (see GPL.txt)
+Platform:   Scala 2.8
+
+Installation
+============
+
+* Install Java and Maven 2
+* $ cd scala-ray
+* $ mvn package
+* $ java -jar target/scala-ray-1.0-SNAPSHOT.jar 
+  will print the command line options.
+
+
+Features
+========
+
+Done:
+* Basic primitives (Planes, Spheres)
+* Point and area light sources
+* Textures
+* Soft shadows (jittered lightsource sampling)
+* Supersampling with optional edge detection (LOW quality setting)
+
+Possible TODOs:
+* A scene description language (the example scenes are hard-coded in Scala)
+* BSPs for more complex scenes
+* Fix embarrassing command-line handling
+* Swing preview window
+* Build: migrate to sbt for incremental compiles
+* Performance: switch back to mutable vector math
+
+DISCLAIMER
+==========
+
+This is really a personal education project. Don't expect anything new or useful here.
+Performance is so-so, I fell back to Java-ish code for most hot loops
+(which is almost everywhere except in the scene setup). Also, the JVM is
+probably not the ideal platform for such a project to begin with
+(no value objects, boxing, no SIMD, range checks, etc.).
+
+Coding
+======
+
+The project follows the standard Maven project layout: the sources are in
+src/main/scala, the tests under src/test/scala.
+
+The example scenes can be found in src/main/scala/net/lichtd/ray/ExampleScenes.scala.
+
+Some example images can be found in the pics/ folder.
+
