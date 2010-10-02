@@ -20,7 +20,7 @@ object ExampleScenes {
    * First test scene: red sphere with four blue "knobs", a green planet, an a large checkered "ground" sphere
    */
   def test01_spheres(screenWidth: Int, screenHeight: Int) : Screen = {
-    val screen = new Screen(new ViewPoint(
+    val screen = makeScreen(new ViewPoint(
       new Vector(0, 1.3, -2.0),    // from
       new Vector(0, -0.1, 1),    // direction
       new Vector(0, 1, 0)),      // up
@@ -58,13 +58,13 @@ object ExampleScenes {
   def test02_earth(screenWidth: Int, screenHeight: Int, currentStep: Int, steps: Int) : Screen = {
     val fromX = 0.75 - 1.9 * Math.sin(currentStep * Math.Pi / steps / 3)
     val earthRotation = - Math.Pi / 2 / steps * currentStep
-    val screen = new Screen(new ViewPoint(
+    val screen = makeScreen(new ViewPoint(
       new Vector(fromX * 2, 1.3, -(fromX + 0.67) * 18),    // from
       new Vector(-fromX / 4, -0.1, 1).normalize,    // direction 
       new Vector(0, 1, 0)),      // up
       DColor(0.2),           // ambient light
       screenWidth, screenHeight)
-    with ShadowCacheScene
+    
     // "earth"
     val sphere = new Sphere(new Vector(0, -200, 1000), 500) with SphericalSurfaceMapper {
       val north = new Vector(0, 1, 0.2).normalize
@@ -101,7 +101,7 @@ object ExampleScenes {
   }
 
   def test03_plane_horizon(screenWidth: Int, screenHeight: Int) : Screen = {
-    val screen = new Screen(new ViewPoint(
+    val screen = makeScreen(new ViewPoint(
       new Vector(0, 1.3, -2.0),    // from
       new Vector(0, 0, 1).normalize,    // direction
       new Vector(0, 1, 0)),      // up
@@ -120,7 +120,7 @@ object ExampleScenes {
   }
 
   def test04_plane_pool(screenWidth: Int, screenHeight: Int, useTextures: Boolean) : Screen = {
-    val screen = new Screen(
+    val screen = makeScreen(
       new ViewPoint(
         new Vector(0, 0.6, 0.2),            // from
         new Vector(0, -1, 1),         // direction
@@ -188,13 +188,12 @@ object ExampleScenes {
    * Render a monochrom grid of speres against a gray background
    */
   def test05_spheregrid(screenWidth: Int, screenHeight: Int) : Screen = {
-    val screen = new Screen(new ViewPoint(
+    val screen = makeScreen(new ViewPoint(
       new Vector(0, 1.3, -2.0),    // from
       new Vector(0, -0.4, 1),    // direction
       new Vector(0, 1, 0)),      // up
       DColor(0.2),           // ambient light
       screenWidth, screenHeight)
-    with ShadowCacheScene
 
     val gridSize = 10
     val gridStep = 0.7
@@ -204,17 +203,26 @@ object ExampleScenes {
       sphere.surface = new ColoredSurface(DColor(0.3), 0.0, 0.0)
       screen.addShape(sphere)
     }
-
+/*
     val floor = new Plane(new Vector(0, 1, 0), 5.0)
     floor.surface = new ColoredSurface(DColor(0.25), 0.0, 0.0)
     screen.addShape(floor)
     val wall = new Plane(new Vector(0, 0, -1), 10.0)
     wall.surface = new ColoredSurface(DColor(0.15), 0.0, 0.0)
     screen.addShape(wall)
-
+*/
     screen.addLightSource(new SquareLightSource(new Vector(-3, 1.5, -3), new Vector(1, 0, 0), new Vector(0, 1, 0), DColor(1.0)))
     screen
   }
+
+  private def makeScreen(vp: ViewPoint, ambient: Color, width: Int, height: Int) : Screen = 
+    new MyScreen(vp, ambient, width, height)
+  
+  // always 'compiled in', enabled/disabled at runtime
+  private class MyScreen(vp: ViewPoint, ambient: Color, width: Int, height: Int) 
+    extends Screen(vp, ambient, width, height)
+    with ShadowCacheScene
+    with KDTreeScene
 
   val cachedTextures = new HashMap[String, Array[Array[Int]]]()
   private def extractLine(bi: BufferedImage, line: Int) : Array[Int] = {

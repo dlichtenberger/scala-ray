@@ -53,4 +53,20 @@ class Sphere(val origin: Vector, val radius: Double) extends Shape {
     // (u, v) represent the position in a [0, 1] square
     new Vector2D(u, v)
   }
+
+  def intersectsAxis(axis: Int, coord: Double) : Int = {
+    val oc = origin.coord(axis)
+    if (oc + radius <= coord) {
+      return -1     
+    } else if (oc - radius >= coord) {
+      return 1
+    } else {
+      return 0  // intersect
+    }
+  }
+
+  def getExtremes(axis: Int) : (Double, Double) = {
+    val oc = origin.coord(axis)
+    return (oc - radius, oc + radius)
+  }
 }

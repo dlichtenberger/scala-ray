@@ -11,8 +11,9 @@ import net.lichtd.ray.shapes.{Shape, Sphere}
  * @version $Rev$
  */
 trait ShadowCacheScene extends Scene {
-  class CachedBlockFinder(wrapped: BlockFinder)
-          extends BlockFinder(wrapped.ray, wrapped.target, wrapped.intersection, wrapped.token) {
+  private val PROP_ENABLED = "shadow-cache"
+
+  class CachedBlockFinder(wrapped: BlockFinder) extends WrappedBlockFinder(wrapped) {
     var lastBlock: Shape = null
 
     override def getBlockingObject(target: Shape, point: Vector, lsOrigin: Vector) : Option[Shape]
@@ -25,18 +26,26 @@ trait ShadowCacheScene extends Scene {
     }
 
 
-    override protected def getBlockingCandidates(ray: Ray) = {
+    override def getBlockingCandidates(ray: Ray) : List[Seq[Shape]] = {
       if (lastBlock == null) {
         super.getBlockingCandidates(ray)
       } else {
         var candidates = super.getBlockingCandidates(ray)
-        lastBlock :: candidates // try last blocking object first
+        Seq(lastBlock) :: candidates // try last blocking object first
       }
     }
   }
 
+  private lazy val enabled = if (System.getProperty(PROP_ENABLED) != null) {
+    println("Shadow cache enabled")
+    true
+  } else false
 
-  override def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any) =
-    new CachedBlockFinder(super.createBlockFinder(ray, target, intersection, intersectionToken))
+  override def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any) : BlockFinder =
+    if (enabled)
+      new CachedBlockFinder(super.createBlockFinder(ray, target, intersection, intersectionToken))
+    else
+      super.createBlockFinder(ray, target, intersection, intersectionToken)
+
   
 }

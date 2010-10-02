@@ -4,6 +4,7 @@ package net.lichtd.ray.scene
 import net.lichtd.ray.math._
 import net.lichtd.ray.shapes.Shape
 import net.lichtd.ray.surface.SurfaceShader
+import java.util.concurrent.atomic.AtomicLong
 
 class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   var lightSourceResolution = 16 // use a 16 rays per light source
@@ -12,6 +13,11 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   var maxReflections = 2 // maximum number of times a ray might get reflected
   var objects = List[Shape]()
   var lightSources = List[LightSource]()
+
+  private val primaryRays = new AtomicLong
+  private val secondaryRays = new AtomicLong
+  private val primaryIntersections = new AtomicLong
+  private val secondaryIntersections = new AtomicLong
 
   def addShape(shape: Shape) = objects ::= shape
 
@@ -22,35 +28,60 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
 
   def addLightSource(source: LightSource) = lightSources ::= source
 
+  /** Called when scene is finished before rendering the first line */
+  def beforeRender() : Unit = { }
+
+  def printStats(labelFormat: String) : Unit = {
+    println("Render stats: ")
+    println(labelFormat.format("Primary rays:") + primaryRays)
+    println(labelFormat.format("Primary inters:") + primaryIntersections)
+    println(labelFormat.format("Secondary rays:") + secondaryRays)
+    println(labelFormat.format("Secondary inters:") + secondaryIntersections)
+  }
+
   def cast(ray: Ray): LightResult = cast(null, ray)
 
   def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any)
       = new BlockFinder(ray, target, intersection, intersectionToken)
 
-  def cast(from: Shape, ray: Ray): LightResult = (ray.iteration > maxReflections) match {
-    case true => EmptyLightResult // stop recursion
-    case false =>
-      var nextObj: (Intersection, Shape, Double) = null
-      val it = objects.elements
-      while (it.hasNext) {
-        val obj = it.next
-        if (obj != from) {
-          obj.intersect(ray) match {
-            case Some(inter: Intersection) =>
-              val distance = (inter.origin - ray.origin).length
-              if (nextObj == null || distance < nextObj._3) {
-                nextObj = (inter, obj, distance)
+  def cast(from: Shape, ray: Ray): LightResult = {
+    (ray.iteration > maxReflections) match {
+      case true => EmptyLightResult // stop recursion
+      case false =>
+        var nextObj: (Intersection, Shape, Double) = null
+        // TODO: ugly hack to get the candidates
+        val groupsIt = createBlockFinder(ray, from, null, null).getBlockingCandidates(ray).elements
+        var checks = 0
+        while (groupsIt.hasNext && (!isOrderedTraversal || nextObj == null)) {
+          // process next group of objects
+          val it = groupsIt.next.elements
+          while (it.hasNext) {
+            val obj = it.next
+            if (obj != from) {
+              checks += 1
+              obj.intersect(ray) match {
+                case Some(inter: Intersection) =>
+                  val distance = (inter.origin - ray.origin).length
+                  if (nextObj == null || distance < nextObj._3) {
+                    nextObj = (inter, obj, distance)
+                  }
+                case None => // try next
               }
-            case None => // try next
+            }
           }
         }
-      }
-
-      if (nextObj != null) 
-        calculateLighting(ray, nextObj._2, nextObj._1)
-      else
-        EmptyLightResult
+        primaryRays.incrementAndGet
+        primaryIntersections.addAndGet(checks)
+        if (nextObj != null) 
+          calculateLighting(ray, nextObj._2, nextObj._1)
+        else
+          EmptyLightResult
+          //new LightResult(Color.DColor(0.01) * checks, None, 0)
+    }
   }
+
+  /** @return whether traversal is ordered, i.e. can stop at the first intersection */
+  protected def isOrderedTraversal = false
 
   case class LightResult(val color: Color, val shape: Option[Shape], val visibleLightSources: Int)
   object EmptyLightResult extends LightResult(Color.BLACK, None, 0)
@@ -139,23 +170,30 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
     def getBlockingObject(target: Shape, point: Vector, lsOrigin: Vector): Option[Shape] = {
       val vector = point - lsOrigin
       val ray = new Ray(lsOrigin, vector)
-      val it = getBlockingCandidates(ray).elements
+      val groupsIt = getBlockingCandidates(ray).elements
       var result: Shape = null
-      while (it.hasNext && result == null) {
-        val obj = it.next
-        if (!obj.eq(target)) {
-          obj.intersectionPoint(ray) match {
-            case Some(inter) =>
-              // check if the intersection is before or after our target object
-              if ((inter - lsOrigin).length < vector.length) {
-                // blocked
-                result = obj
-              }
-            case None =>
-          // not blocked
+      var checks = 0
+      while (groupsIt.hasNext && (!isOrderedTraversal || result == null)) {
+        val it = groupsIt.next.elements
+        while (it.hasNext && result == null) {
+          val obj = it.next
+          if (!obj.eq(target)) {
+            checks += 1
+            obj.intersectionPoint(ray) match {
+              case Some(inter) =>
+                // check if the intersection is before or after our target object
+                if ((inter - lsOrigin).length < vector.length) {
+                  // blocked
+                  result = obj
+                }
+              case None =>
+            // not blocked
+            }
           }
         }
       }
+      secondaryRays.incrementAndGet
+      secondaryIntersections.addAndGet(checks)
       if (result == null) None else Some(result)
     }
 
@@ -165,8 +203,12 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
      * @param ray the ray to be casted
      * @param target the target that should be reached by the ray
      */
-    protected def getBlockingCandidates(ray: Ray): List[Shape] = objects
+    def getBlockingCandidates(ray: Ray): List[Seq[Shape]] = List(objects)
   }
 
+  /** Base wrapper class for extension to the Block Finder */
+  abstract class WrappedBlockFinder(wrapped: BlockFinder) extends BlockFinder(
+    wrapped.ray, wrapped.target, wrapped.intersection, wrapped.token
+  )
 
 }

@@ -86,6 +86,10 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
   }
 
   def render[T <: ImageWriter](imageWriter: T): RenderedScene[T] = {
+
+    // setup scene
+    beforeRender()
+
     val nThreads = Runtime.getRuntime.availableProcessors
     //println("Rendering in " + nThreads + " threads")
     val pool = Executors.newFixedThreadPool(nThreads)
@@ -97,6 +101,8 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
     }
     pool.shutdown
     pool.awaitTermination(java.lang.Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+
+    printStats("%-20s")
 
     // TODO: clone data?
     return new RenderedScene(imageWriter, data)

@@ -26,4 +26,9 @@ class Plane(val normal: Vector, val distance: Double) extends Shape {
         Some(ray.origin + ray.direction * t)
     }
   }
+
+  def intersectsAxis(axis: Int, coord: Double) = 0  // ?
+
+
+  def getExtremes(axis: Int) : (Double, Double) = (0,0)  // ?
 }
