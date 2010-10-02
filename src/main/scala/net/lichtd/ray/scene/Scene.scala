@@ -44,34 +44,58 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any)
       = new BlockFinder(ray, target, intersection, intersectionToken)
 
+  protected def recordPrimaryRays(delta: Int) : Unit = primaryRays.addAndGet(delta)
+  protected def recordSecondaryRays(delta: Int) : Unit = secondaryRays.addAndGet(delta)
+  protected def recordPrimaryIntersections(delta: Int) : Unit = primaryIntersections.addAndGet(delta)
+  protected def recordSecondaryIntersections(delta: Int) : Unit = secondaryIntersections.addAndGet(delta)
+  protected def recordIntersections(primary: Boolean, delta: Int) : Unit = {
+    if (primary) {
+      recordPrimaryIntersections(delta)
+    } else {
+      recordSecondaryIntersections(delta)
+    }
+  }
+
+  /**
+   * Walk the scene, calling func on every shape that may intersect the ray,
+   * stopping when func returned true for the current group of objects.
+   * (in the simple scene there is only one group, but e.g. in kd-trees one could
+   * stop after hitting an object in a tree node)
+   */
+   def walkScene[T](from: Shape, ray: Ray, interFunc: (Shape, Ray) => Option[T], func: (Shape, T) => Boolean) : Unit = {
+    // unordered traversal across all shapes in the scene
+    var checks = 0
+    for (obj <- objects) {
+      if (obj != from) {
+        interFunc(obj, ray) match {
+          case Some(inter: T)    => func(obj, inter) // check rest of objects
+          case None              => // continue
+        }
+        checks += 1
+      }
+    }
+    if (from == null) {
+      recordPrimaryIntersections(checks)
+    } else {
+      recordSecondaryIntersections(checks)
+    }
+  }
+
   def cast(from: Shape, ray: Ray): LightResult = {
     (ray.iteration > maxReflections) match {
       case true => EmptyLightResult // stop recursion
       case false =>
+        recordPrimaryRays(1)
         var nextObj: (Intersection, Shape, Double) = null
-        // TODO: ugly hack to get the candidates
-        val groupsIt = createBlockFinder(ray, from, null, null).getBlockingCandidates(ray).elements
-        var checks = 0
-        while (groupsIt.hasNext && (!isOrderedTraversal || nextObj == null)) {
-          // process next group of objects
-          val it = groupsIt.next.elements
-          while (it.hasNext) {
-            val obj = it.next
-            if (obj != from) {
-              checks += 1
-              obj.intersect(ray) match {
-                case Some(inter: Intersection) =>
-                  val distance = (inter.origin - ray.origin).length
-                  if (nextObj == null || distance < nextObj._3) {
-                    nextObj = (inter, obj, distance)
-                  }
-                case None => // try next
-              }
-            }
+        walkScene(from, ray, _.intersect(_), (obj, inter: Intersection) => {
+          val distance = (inter.origin - ray.origin).length
+          if (nextObj == null || distance < nextObj._3) {
+            nextObj = (inter, obj, distance)
+            true
+          } else {
+            false
           }
-        }
-        primaryRays.incrementAndGet
-        primaryIntersections.addAndGet(checks)
+        })
         if (nextObj != null) 
           calculateLighting(ray, nextObj._2, nextObj._1)
         else
@@ -170,40 +194,20 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
     def getBlockingObject(target: Shape, point: Vector, lsOrigin: Vector): Option[Shape] = {
       val vector = point - lsOrigin
       val ray = new Ray(lsOrigin, vector)
-      val groupsIt = getBlockingCandidates(ray).elements
+      recordSecondaryRays(1)
       var result: Shape = null
-      var checks = 0
-      while (groupsIt.hasNext && (!isOrderedTraversal || result == null)) {
-        val it = groupsIt.next.elements
-        while (it.hasNext && result == null) {
-          val obj = it.next
-          if (!obj.eq(target)) {
-            checks += 1
-            obj.intersectionPoint(ray) match {
-              case Some(inter) =>
-                // check if the intersection is before or after our target object
-                if ((inter - lsOrigin).length < vector.length) {
-                  // blocked
-                  result = obj
-                }
-              case None =>
-            // not blocked
-            }
-          }
+      walkScene(target, ray, _.intersectionPoint(_), (shape, inter: Vector) => {
+        // check if the intersection is before or after our target object
+        if ((inter - lsOrigin).length < vector.length) {
+          // blocked
+          result = shape
+          true
+        } else {
+          false
         }
-      }
-      secondaryRays.incrementAndGet
-      secondaryIntersections.addAndGet(checks)
+      })
       if (result == null) None else Some(result)
     }
-
-    /**
-     * Returns the shapes that should be checked for a collision with the given ray.
-     *
-     * @param ray the ray to be casted
-     * @param target the target that should be reached by the ray
-     */
-    def getBlockingCandidates(ray: Ray): List[Seq[Shape]] = List(objects)
   }
 
   /** Base wrapper class for extension to the Block Finder */

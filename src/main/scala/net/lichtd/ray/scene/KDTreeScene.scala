@@ -2,58 +2,12 @@ package net.lichtd.ray.scene
 
 import net.lichtd.ray.math.Vector
 import net.lichtd.ray.shapes.{Shape, Sphere}
+import scala.collection.JavaConversions._
+import java.util.ArrayList
 
 trait KDTreeScene extends Scene {
   private val PROP_ENABLED = "kd-tree"
   var kdtree : KDTree = null
-
-  protected override def isOrderedTraversal = true
-
-  class BSPBlockFinder(wrapped: BlockFinder) extends WrappedBlockFinder(wrapped) {
-
-    override def getBlockingCandidates(ray: Ray): List[Seq[Shape]] = {
-      // walk KD tree
-      var sorted : List[Seq[Shape]] = List()
-      val tsplit = (kdtree.coord - ray.origin.coord(kdtree.axis)) / ray.direction.coord(kdtree.axis)
-      for (node <- createNodePath(ray, kdtree, 0, 9999)) {
-        if (node.leaf) {
-          sorted ::= node.shapes
-        }
-      }
-      //println("Checking " + sorted.flatten.size + " shapes (" + kdtree.shapes.size + " total)")
-      sorted.reverse
-    }
-
-    private def createNodePath(ray: Ray, node: KDTree, tmin: Double, tmax: Double) : List[KDTree] = {
-      if (node.leaf) {
-        return List(node)
-      }
-      val axis = node.axis
-      val (near, far) = {
-        if (ray.direction.coord(axis) > 0) {
-          (node.left, node.right)
-        } else {
-          (node.right, node.left)
-        }
-      }
-      if (ray.direction.coord(axis) != 0) {
-        val tsplit = (node.coord - ray.origin.coord(axis)) / ray.direction.coord(axis)
-        if (tsplit > tmax) {
-          //println("Checking only near (tsplit=" + tsplit + ", minc=" + node.minCoord + ")")
-          return node :: createNodePath(ray, near, tmin, tmax)
-        } else if (tsplit < tmin) {
-          //println("Checking only far")
-          return node :: createNodePath(ray, far, tmin, tmax)
-        } else {
-          //println("Checking both")
-          return node :: (createNodePath(ray, near, tmin, tsplit) ++ createNodePath(ray, far, tsplit, tmax))
-        }
-      } else {
-        return node :: (createNodePath(ray, near, tmin, tmax) ++ createNodePath(ray, far, tmin, tmax))
-      }
-    }
-    
-  }
 
   private lazy val enabled = if (System.getProperty(PROP_ENABLED) == null) false else {
     println("KD Tree enabled")
@@ -68,12 +22,61 @@ trait KDTreeScene extends Scene {
     }
   }
 
-  override def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any) : BlockFinder =
-    if (enabled)
-      new BSPBlockFinder(super.createBlockFinder(ray, target, intersection, intersectionToken))
-    else
-      super.createBlockFinder(ray, target, intersection, intersectionToken)
-  
+  override def walkScene[T](from: Shape, ray: Ray, 
+                            interFunc: (Shape, Ray) => Option[T], 
+                            func: (Shape, T) => Boolean) : Unit = {
+    if (!enabled) {
+      super.walkScene(from, ray, interFunc, func)
+    } else {
+      walkNodes(from, ray, kdtree, 0, 9999, interFunc, func)
+    }
+  }
+
+  private def walkNodes[T](from: Shape, ray: Ray, node: KDTree, tmin: Double, tmax: Double,
+                        interFunc: (Shape, Ray) => Option[T],
+                        func: (Shape, T) => Boolean) : Boolean = {
+    if (node.leaf) {
+      val it = node.shapes.elements
+      var done = false;
+      var checks = 0
+      while (it.hasNext) {
+        val obj = it.next
+        if (obj != from) {
+          checks += 1
+          interFunc(obj, ray) match {
+            case Some(inter: T)    => done |= func(obj, inter)
+            case None => // continue
+          }
+        }
+      }
+      recordIntersections(from == null, checks)
+      return done
+    }
+    val axis = node.axis
+    val (near, far) = {
+      if (ray.direction.coord(axis) > 0) {
+        (node.left, node.right)
+      } else {
+        (node.right, node.left)
+      }
+    }
+    if (ray.direction.coord(axis) != 0) {
+      val tsplit = (node.coord - ray.origin.coord(axis)) / ray.direction.coord(axis)
+      if (tsplit > tmax) {
+        //println("Checking only near (tsplit=" + tsplit + ", minc=" + node.minCoord + ")")
+        return walkNodes(from, ray, near, tmin, tmax, interFunc, func)
+      } else if (tsplit < tmin) {
+        //println("Checking only far")
+        return walkNodes(from, ray, far, tmin, tmax, interFunc, func)
+      } else {
+        //println("Checking both")
+        return walkNodes(from, ray, near, tmin, tsplit, interFunc, func) || walkNodes(from, ray, far, tsplit, tmax, interFunc, func)
+      }
+    } else {
+      return walkNodes(from, ray, near, tmin, tmax, interFunc, func) || walkNodes(from, ray, far, tmin, tmax, interFunc, func)
+    }
+  }
+
 }
 
 object KDTree {

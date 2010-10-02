@@ -64,7 +64,6 @@ object App {
     }
   }
 
-  //println( "Waiting for keypress" ); System.in.read()
   def main(args: Array[String])  {
     new File("out").mkdir()
     if (args.length == 0 || (args.length == 1 && (args(0) == "-h" || args(0) == "--help"))) {
@@ -73,6 +72,10 @@ object App {
       println(" quality  : [PREVIEW, LOW, NORMAL, HIGH, ULTRA]")
       println()
       exit(1)
+    }
+
+    if (System.getProperty("wait") != null) {
+      println( "Waiting for keypress" ); System.in.read()
     }
 
     val scene = Integer.parseInt(args(0))
