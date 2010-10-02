@@ -36,12 +36,19 @@ final class Vector(val x: Double, val y: Double, val z: Double, val forceNormali
     case false => new Vector(x / length, y / length, z / length, true)
   }
 
-  def coord(axis: Int) = axis match {
-    case 0  => x
-    case 1  => y
-    case 2  => z
-    case unknown => throw new IllegalArgumentException("Unknown axis: " + unknown)
+  def coord(axis: Int) : Double = {
+    if (axis == 0) { 
+     return x
+    } else if (axis == 1) {
+     return y
+    } else if (axis == 2) {
+     return z
+    } else {
+     throw new IllegalArgumentException("Unknown axis: " + axis)
+    }
   }
+
+  def toArray = Array[Double](x, y, z)
 
   override def equals(other: Any) : Boolean = other match {
     case v: Vector =>   equal(x, v.x) && equal(y, v.y) && equal(z, v.z)

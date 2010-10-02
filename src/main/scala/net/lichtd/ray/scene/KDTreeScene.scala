@@ -28,19 +28,21 @@ trait KDTreeScene extends Scene {
     if (!enabled) {
       super.walkScene(from, ray, interFunc, func)
     } else {
-      walkNodes(from, ray, kdtree, 0, 9999, interFunc, func)
+      walkNodes(from, ray, kdtree, 0, 9999, ray.direction.toArray, ray.origin.toArray, interFunc, func)
     }
   }
 
   private def walkNodes[T](from: Shape, ray: Ray, node: KDTree, tmin: Double, tmax: Double,
+                        direction: Array[Double],  // unwrapped from ray for faster access
+                        origin: Array[Double],     // unwrapped from ray for faster access
                         interFunc: (Shape, Ray) => Option[T],
                         func: (Shape, T) => Boolean) : Boolean = {
     if (node.leaf) {
-      val it = node.shapes.elements
       var done = false;
       var checks = 0
-      while (it.hasNext) {
-        val obj = it.next
+      var i = 0
+      while (i < node.shapes.length) {
+        val obj = node.shapes(i)
         if (obj != from) {
           checks += 1
           interFunc(obj, ray) match {
@@ -48,32 +50,39 @@ trait KDTreeScene extends Scene {
             case None => // continue
           }
         }
+        i += 1
       }
       recordIntersections(from == null, checks)
       return done
     }
     val axis = node.axis
-    val (near, far) = {
-      if (ray.direction.coord(axis) > 0) {
-        (node.left, node.right)
-      } else {
-        (node.right, node.left)
-      }
+    var near: KDTree = null
+    var far: KDTree = null
+    val diraxis : Double = direction(axis % 3)
+    val origaxis : Double = origin(axis % 3)
+    if (diraxis > 0) {
+      near = node.left
+      far = node.right
+    } else {
+      near = node.right
+      far = node.left
     }
-    if (ray.direction.coord(axis) != 0) {
-      val tsplit = (node.coord - ray.origin.coord(axis)) / ray.direction.coord(axis)
+    if (diraxis != 0) {
+      val tsplit = (node.coord - origaxis) / diraxis
       if (tsplit > tmax) {
         //println("Checking only near (tsplit=" + tsplit + ", minc=" + node.minCoord + ")")
-        return walkNodes(from, ray, near, tmin, tmax, interFunc, func)
+        return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func)
       } else if (tsplit < tmin) {
         //println("Checking only far")
-        return walkNodes(from, ray, far, tmin, tmax, interFunc, func)
+        return walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func)
       } else {
         //println("Checking both")
-        return walkNodes(from, ray, near, tmin, tsplit, interFunc, func) || walkNodes(from, ray, far, tsplit, tmax, interFunc, func)
+        return walkNodes(from, ray, near, tmin, tsplit, direction, origin, interFunc, func) ||
+               walkNodes(from, ray, far, tsplit, tmax, direction, origin, interFunc, func)
       }
     } else {
-      return walkNodes(from, ray, near, tmin, tmax, interFunc, func) || walkNodes(from, ray, far, tmin, tmax, interFunc, func)
+      return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func) ||
+             walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func)
     }
   }
 
@@ -88,7 +97,7 @@ object KDTree {
   def create(shapes: Seq[Shape], axis: Int, depth: Int) : KDTree = {
     if (shapes.size <= SIZE_CUTOFF || depth > DEPTH_CUTOFF) {
       // TODO: is 0 really good for coord/minCoord/maxCoord here?
-      return new KDTree(axis, depth, 0, 0, 0, null, null, shapes)
+      return new KDTree(axis, depth, 0, 0, 0, null, null, shapes.toArray)
     }
     // get "median" value
     var extremes : Seq[(Double, Double)] = shapes.map(_.getExtremes(axis))
@@ -113,15 +122,15 @@ object KDTree {
       axis, depth, split, leftExtremes(0), leftExtremes(leftExtremes.size - 1),
       create(left, (axis + 1) % 3, depth + 1), 
       create(right, (axis + 1) % 3, depth + 1), 
-      shapes
+      shapes.toArray
     )
   }
 }
 
 class KDTree(val axis: Int, val depth: Int, val coord: Double, val minCoord: Double, val maxCoord: Double,
-             val left: KDTree, val right: KDTree, val shapes: Seq[Shape]) {
+             val left: KDTree, val right: KDTree, val shapes: Array[Shape]) {
 
-  def leaf = left == null || right == null
+  val leaf = (left == null || right == null)
 
   lazy val globalMin : Double = Math.min(coord, if (leaf) coord else Math.min(left.globalMin, right.globalMin))
   lazy val globalMax : Double = Math.max(coord, if (leaf) coord else Math.max(left.globalMax, right.globalMax))

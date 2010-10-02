@@ -12,7 +12,7 @@ class KDTreeTest {
   @Test def simpleTree : Unit = {
     val root = new Sphere(new Vector(0,0,0), 1.0)
     val tree = KDTree.create(List(root))
-    assertEquals(List(root), tree.shapes)
+    assertEquals(root, tree.shapes(0))
   }
 
   @Test def simpleSplit : Unit = {

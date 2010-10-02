@@ -7,6 +7,8 @@ import net.lichtd.ray.surface.SurfaceShader
 import java.util.concurrent.atomic.AtomicLong
 
 class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
+  val PROP_RECORDSTATS = "stats"    // record ray and trace counts
+
   var lightSourceResolution = 16 // use a 16 rays per light source
   var lightSourceAbortRatio = 0.3   // percentage of total light source checks before aborting
                                     // when all checks return the same value
@@ -14,6 +16,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   var objects = List[Shape]()
   var lightSources = List[LightSource]()
 
+  val statsEnabled = (System.getProperty(PROP_RECORDSTATS) != null)
   private val primaryRays = new AtomicLong
   private val secondaryRays = new AtomicLong
   private val primaryIntersections = new AtomicLong
@@ -32,29 +35,36 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   def beforeRender() : Unit = { }
 
   def printStats(labelFormat: String) : Unit = {
-    println("Render stats: ")
-    println(labelFormat.format("Primary rays:") + primaryRays)
-    println(labelFormat.format("Primary inters:") + primaryIntersections)
-    println(labelFormat.format("Secondary rays:") + secondaryRays)
-    println(labelFormat.format("Secondary inters:") + secondaryIntersections)
+    if (!statsEnabled) {
+      println("Render stats disabled (enable with -D" + PROP_RECORDSTATS + ")")
+    } else {
+      println("Render stats: ")
+      println(labelFormat.format("Primary rays:") + primaryRays)
+      println(labelFormat.format("Primary inters:") + primaryIntersections)
+      println(labelFormat.format("Secondary rays:") + secondaryRays)
+      println(labelFormat.format("Secondary inters:") + secondaryIntersections)
+    }
   }
 
   def cast(ray: Ray): LightResult = cast(null, ray)
 
   def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any)
       = new BlockFinder(ray, target, intersection, intersectionToken)
-
-  protected def recordPrimaryRays(delta: Int) : Unit = primaryRays.addAndGet(delta)
-  protected def recordSecondaryRays(delta: Int) : Unit = secondaryRays.addAndGet(delta)
-  protected def recordPrimaryIntersections(delta: Int) : Unit = primaryIntersections.addAndGet(delta)
-  protected def recordSecondaryIntersections(delta: Int) : Unit = secondaryIntersections.addAndGet(delta)
+ 
+  protected def recordPrimaryRays(delta: Int) : Unit = if (statsEnabled) primaryRays.addAndGet(delta)
+  protected def recordSecondaryRays(delta: Int) : Unit = if (statsEnabled) secondaryRays.addAndGet(delta)
+  protected def recordPrimaryIntersections(delta: Int) : Unit = if (statsEnabled) primaryIntersections.addAndGet(delta)
+  protected def recordSecondaryIntersections(delta: Int) : Unit = if (statsEnabled) secondaryIntersections.addAndGet(delta)
   protected def recordIntersections(primary: Boolean, delta: Int) : Unit = {
-    if (primary) {
-      recordPrimaryIntersections(delta)
-    } else {
-      recordSecondaryIntersections(delta)
+    if (statsEnabled) {
+      if (primary) {
+        recordPrimaryIntersections(delta)
+      } else {
+        recordSecondaryIntersections(delta)
+      }
     }
   }
+
 
   /**
    * Walk the scene, calling func on every shape that may intersect the ray,
