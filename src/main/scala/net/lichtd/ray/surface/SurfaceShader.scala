@@ -26,7 +26,7 @@ abstract class SurfaceShader(val reflectionCoeff: Double, val specularCoeff: Dou
     // diffuse
     val diffuse = targetColor * (light * surfaceNormal)
     if (specularCoeff > 0) {
-      lightColor * (diffuse + (lightColor * Math.pow(Math.max(0, view * (light reflectAround surfaceNormal)), specularCoeff)))
+      lightColor * (diffuse + (lightColor * scala.math.pow(scala.math.max(0, view * (light reflectAround surfaceNormal)), specularCoeff)))
     } else {
       lightColor * diffuse
     }

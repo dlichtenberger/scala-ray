@@ -3,7 +3,7 @@ package net.lichtd.ray.math
 final class Vector2D(val x: Double, val y: Double) {
   import NumberUtils.equal
 
-  lazy val length = Math.sqrt(x*x + y*y)
+  lazy val length = scala.math.sqrt(x*x + y*y)
   lazy val normalized = equal(length, 1.0)
 
   // TODO: vector arithmetic

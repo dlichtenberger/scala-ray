@@ -7,10 +7,10 @@ class ViewPoint(val origin: Vector, _direction: Vector, _up: Vector) {
 
   // calculate up
   private val viewPlanePoint = origin + direction // a point on the viewplane
-  val up = if (Math.abs(direction * _up) < 0.01)
+  val up = if (scala.math.abs(direction * _up) < 0.01)
     _up.normalize // already normal to view direction
   else  // project using direction 
-    (_up.normalize + direction * Math.abs(direction * _up)).normalize
+    (_up.normalize + direction * scala.math.abs(direction * _up)).normalize
 
   val right = (up cross direction).normalize
   

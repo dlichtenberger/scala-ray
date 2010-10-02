@@ -15,7 +15,7 @@ class ShapesTest {
   // ray from inside sphere
   @Test @Ignore def sphereInnerIntersect = assertIntersect(new Sphere(Vector.ORIGIN, 1),
                     new Ray(Vector.ORIGIN, new Vector(1, 1, 0)),
-                    new Vector(Math.sqrt(.5), Math.sqrt(.5), 0))
+                    new Vector(scala.math.sqrt(.5), scala.math.sqrt(.5), 0))
 
   // ray from the outside
   @Test def sphereExtIntersect = assertIntersect(new Sphere(Vector.ORIGIN, 1),

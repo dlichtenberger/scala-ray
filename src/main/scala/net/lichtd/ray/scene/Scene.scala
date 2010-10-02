@@ -133,7 +133,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
             (ambientLight * target.surface.getAmbient(token, intersection))
     // calculate lightsources
     val blockFinder = createBlockFinder(ray, target, intersection, token)
-    val it = lightSources.elements
+    val it = lightSources.iterator
     while (it.hasNext) {
       color += blockFinder.shadeTarget(it.next)
     }
@@ -150,7 +150,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
         // partially occluded/visible
         var result: Color = Color.BLACK
         // first do a coarser check to see if the light source is completely occluded/visible
-        val iter = ls.getOrigins(intersection.origin, lightSourceResolution).elements
+        val iter = ls.getOrigins(intersection.origin, lightSourceResolution).iterator
         while (iter.hasNext) {
           result += processLightOrigin(ls, iter.next)
         }
@@ -164,7 +164,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
       }
       val origins = ls.getOrigins(intersection.origin, (lightSourceResolution.toDouble * lightSourceAbortRatio).asInstanceOf[Int])
       var lastBlock : Option[Boolean] = None
-      val iterator = origins.elements
+      val iterator = origins.iterator
       while (iterator.hasNext) {
         var blocked : Boolean = getBlockingObject(target, intersection.origin, iterator.next) != None
         if (lastBlock == None) {

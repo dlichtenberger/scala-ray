@@ -101,7 +101,7 @@ object KDTree {
     }
     // get "median" value
     var extremes : Seq[(Double, Double)] = shapes.map(_.getExtremes(axis))
-    var leftExtremes = extremes.map(_._1).toList.sort((e1, e2) => (e1 < e2))
+    var leftExtremes = extremes.map(_._1).toList.sortWith((e1, e2) => (e1 < e2))
     //var rightExtremes = extremes.map(_._2).sort
     val split = leftExtremes(leftExtremes.size / 2 + (leftExtremes.size % 2))
 
@@ -132,8 +132,8 @@ class KDTree(val axis: Int, val depth: Int, val coord: Double, val minCoord: Dou
 
   val leaf = (left == null || right == null)
 
-  lazy val globalMin : Double = Math.min(coord, if (leaf) coord else Math.min(left.globalMin, right.globalMin))
-  lazy val globalMax : Double = Math.max(coord, if (leaf) coord else Math.max(left.globalMax, right.globalMax))
+  lazy val globalMin : Double = scala.math.min(coord, if (leaf) coord else scala.math.min(left.globalMin, right.globalMin))
+  lazy val globalMax : Double = scala.math.max(coord, if (leaf) coord else scala.math.max(left.globalMax, right.globalMax))
 
   override def toString : String = 
     return "KDTree(axis:" + axis + "@" + coord + ",d:" + depth + ",size: " + shapes.size + ",left: " +

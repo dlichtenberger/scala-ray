@@ -8,7 +8,7 @@ final class MutableVector(val v: Vector) {
 
   def toVector = new Vector(x, y, z)
 
-  def length = Math.sqrt(x*x + y*y + z*z)
+  def length = scala.math.sqrt(x*x + y*y + z*z)
   def normalized = equal(length, 1.0)
 
   // basic ops

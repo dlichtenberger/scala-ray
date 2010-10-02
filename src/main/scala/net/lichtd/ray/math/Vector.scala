@@ -5,7 +5,7 @@ final class Vector(val x: Double, val y: Double, val z: Double, val forceNormali
 
   def this(x: Double, y: Double, z: Double) = this(x, y, z, false)
   
-  lazy val length = if (forceNormalized) 1 else Math.sqrt(x*x + y*y + z*z)
+  lazy val length = if (forceNormalized) 1 else scala.math.sqrt(x*x + y*y + z*z)
   lazy val normalized = forceNormalized || equal(length, 1.0)
 
   // basic ops
@@ -24,8 +24,8 @@ final class Vector(val x: Double, val y: Double, val z: Double, val forceNormali
     val axis = _axis.normalize
     // taken from http://www.gamedev.net/community/forums/topic.asp?topic_id=198844
     // (corrected parentheses before cos() on the first expression) 
-    ((this - (axis * (axis * this))) * Math.cos(theta) +
-    ((this cross axis) * Math.sin(theta)) +
+    ((this - (axis * (axis * this))) * scala.math.cos(theta) +
+    ((this cross axis) * scala.math.sin(theta)) +
     (axis * (axis * this))).normalize
   }
 

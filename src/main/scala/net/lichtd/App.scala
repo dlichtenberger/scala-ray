@@ -10,7 +10,7 @@ import net.lichtd.ray.output.{Screen,TGAWriter}
 import net.lichtd.ray.math.{Color, Vector}
 
 object App {
-  sealed abstract case class Quality() {
+  sealed abstract class Quality() {
     def apply(screen: Screen)
   }
 

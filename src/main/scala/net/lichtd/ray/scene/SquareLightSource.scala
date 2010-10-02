@@ -20,7 +20,7 @@ class SquareLightSource(val upperLeftCorner: Vector, val right: Vector, val down
     }
     if (!cachedOrigins.containsKey(rays)) {
       // TODO: return sample orthogonal to the view vector (from - center of LS)
-      val steps = Math.round(Math.sqrt(rays))
+      val steps = scala.math.round(scala.math.sqrt(rays))
       var origins = List[Vector]()
       var y = 0
       while (y < steps.toInt) {
@@ -36,12 +36,12 @@ class SquareLightSource(val upperLeftCorner: Vector, val right: Vector, val down
       // add MonteCarlo distribution (jitter)
       var i = 0
       while (i < jitteredRays) {
-        jitteredOrigins(i) = orig.origins.map(_ + orig.rightStep * Math.random + orig.downStep * Math.random)
+        jitteredOrigins(i) = orig.origins.map(_ + orig.rightStep * scala.math.random + orig.downStep * scala.math.random)
         i += 1
       }
       cachedOrigins.putIfAbsent(rays, jitteredOrigins)
     }
-    cachedOrigins.get(rays)(Math.max((Math.random * jitteredRays).asInstanceOf[Int], jitteredRays - 1))
+    cachedOrigins.get(rays)(scala.math.max((scala.math.random * jitteredRays).asInstanceOf[Int], jitteredRays - 1))
   }
 
 

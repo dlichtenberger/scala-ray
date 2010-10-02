@@ -27,7 +27,7 @@ trait CachingLightSource extends LightSource {
       cachedOrigins.putIfAbsent(rays, createCacheEntry(from, rays))
     }
     val set = cachedOrigins.get(rays)
-    return set((Math.random * set.size).asInstanceOf[Int])
+    return set((scala.math.random * set.size).asInstanceOf[Int])
   }
 
   /** Create one (or more, if adding jitter noise) sets of origins for the given number of rays */

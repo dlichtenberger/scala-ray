@@ -40,8 +40,8 @@ class CheckeredSurface[T <: SurfaceMapper](
 
   def getTargetSurface(point: Vector) : SurfaceShader = {
     val coords = target.getSurfaceCoordinates(point)
-    val x = Math.round(n * coords.x)
-    val y = Math.round(n * coords.y)
+    val x = scala.math.round(n * coords.x)
+    val y = scala.math.round(n * coords.y)
     if ((x + y) % 2 == 0) white else black
   }
 }

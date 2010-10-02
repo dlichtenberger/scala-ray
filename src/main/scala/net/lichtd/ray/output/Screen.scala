@@ -16,7 +16,7 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
 
   final val deltaCol : Vector = viewPoint.right / (width.toDouble / viewPoint.viewPlaneDistance / aspectRatio)
   final val deltaRow : Vector = viewPoint.up / (height.toDouble / viewPoint.viewPlaneDistance)
-  final val data = new Array[Array[Int]](height, width)
+  final val data = Array.ofDim[Int](height, width)
   final val reporter = new ProgressReporter(height, 60)
 
   def getRay(x: Double, y: Double) : Ray =
@@ -51,7 +51,7 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
               pixel = primary.color
               0
             } else {
-              x -= Math.min(x, 3)
+              x -= scala.math.min(x, 3)
               inRecalc = 5   // don't do edge detection for 2 pixels
               subPixelResolution
             }
