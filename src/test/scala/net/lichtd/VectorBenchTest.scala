@@ -26,11 +26,11 @@ class VectorBenchTest {
     }
     println("Vector: 1M adds = " + (System.currentTimeMillis - start) + "ms, result=" + v)
 
-    var mv = new MutableVector(new Vector(0, 0, 0))
+    val mv = new MutableVector(new Vector(0, 0, 0))
     i = 0
     start = System.currentTimeMillis
     while (i < COUNT) {
-      mv += v2
+      mv + v2;
       i += 1
     }
     println("MutableVector: 1M adds = " + (System.currentTimeMillis - start) + "ms, result=" + mv)
