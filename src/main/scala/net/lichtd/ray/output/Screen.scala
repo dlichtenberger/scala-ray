@@ -1,11 +1,8 @@
 package net.lichtd.ray.output
 
 
-import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 import net.lichtd.ray.scene._
-import java.util.concurrent.{Executors,TimeUnit}
 import net.lichtd.ray.math._
-import net.lichtd.ray.shapes.Shape
 
 class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val height: Int, val aspectRatio: Double)
         extends Scene(_viewPoint, _ambientLight) {
@@ -27,76 +24,66 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
                   ) - viewPoint.origin
                 )
 
-  class LineRenderer(val imageWriter: ImageWriter, val line: Int) extends Runnable {
-    def run = {
-      val w = width
-      val pixels = new Array[Int](w)
-      var x = 0
-      var last: LightResult = null
-      var inRecalc = 0 // in recalculation after edge detection?
-      while (x < w) {
-        var pixel : Color = Color.BLACK
-        var dy = 0
-        // Subpixel resolution of 1 means one sample in the center,
-        // 2 means 2x2 samples starting in the top left corner, excluding the bottom right border, and so on
-        val res =
-          if (edgeDetection && inRecalc <= 0 && x > 0) {
-            // cast primary ray first
-            val primary = cast(getRay(
-                x.toDouble - 0.5,
-                line - 0.5
-            ))
+  def renderLine(imageWriter: ImageWriter, line: Int) {
+    val w = width
+    val pixels = new Array[Int](w)
+    var x = 0
+    var last: LightResult = null
+    var inRecalc = 0 // in recalculation after edge detection?
+    while (x < w) {
+      var pixel: Color = Color.BLACK
+      var dy = 0
+      // Subpixel resolution of 1 means one sample in the center,
+      // 2 means 2x2 samples starting in the top left corner, excluding the bottom right border, and so on
+      val res =
+        if (edgeDetection && inRecalc <= 0 && x > 0) {
+          // cast primary ray first
+          val primary = cast(getRay(
+            x.toDouble - 0.5,
+            line - 0.5
+          ))
           if (last != null && primary.shape == last.shape && primary.visibleLightSources == last.visibleLightSources) {
-              // use match color, assume we're still painting the same shape
-              pixel = primary.color
-              0
-            } else {
-              x -= Math.min(x, 3)
-              inRecalc = 5   // don't do edge detection for 2 pixels
-              subPixelResolution
-            }
+            // use match color, assume we're still painting the same shape
+            pixel = primary.color
+            0
           } else {
+            x -= Math.min(x, 3)
+            inRecalc = 5 // don't do edge detection for 2 pixels
             subPixelResolution
           }
-        val xDouble = x.toDouble
-        if (res > 0) {
-          val steps = res
-          while (dy < res) {
-            val y = dy.toDouble / steps
-            var dx = 0
-            while (dx < res) {
-              val primary = cast(getRay(
-                  xDouble - 0.5 + dx.toDouble / steps,
-                  line - 0.5 + y
-              ))
-              pixel += primary.color / (res * res)
-              last = primary  // store last ray for edge detection
-              dx += 1
-            }
-            dy += 1
-          }
+        } else {
+          subPixelResolution
         }
-        pixels(x) = imageWriter.toInternal(pixel)
-        x += 1
-        inRecalc -= 1
+      val xDouble = x.toDouble
+      if (res > 0) {
+        val steps = res
+        while (dy < res) {
+          val y = dy.toDouble / steps
+          var dx = 0
+          while (dx < res) {
+            val primary = cast(getRay(
+              xDouble - 0.5 + dx.toDouble / steps,
+              line - 0.5 + y
+            ))
+            pixel += primary.color / (res * res)
+            last = primary // store last ray for edge detection
+            dx += 1
+          }
+          dy += 1
+        }
       }
-      put(line, pixels)
-      //println("Rendered line " + line)
+      pixels(x) = imageWriter.toInternal(pixel)
+      x += 1
+      inRecalc -= 1
     }
+    put(line, pixels)
+    //println("Rendered line " + line)
   }
 
   def render[T <: ImageWriter](imageWriter: T): RenderedScene[T] = {
-    val nThreads = Runtime.getRuntime.availableProcessors
-    //println("Rendering in " + nThreads + " threads")
-    val pool = Executors.newFixedThreadPool(nThreads)
-    reporter.reset
-    var y = 0
-    while (y < height) {
-      pool.execute(new LineRenderer(imageWriter, y))
-      y += 1
-    }
-    pool.shutdown
-    pool.awaitTermination(java.lang.Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+    reporter.reset()
+
+    (0 to height - 1).par.map(renderLine(imageWriter, _))
 
     // TODO: clone data?
     return new RenderedScene(imageWriter, data)
@@ -104,7 +91,7 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
 
   def put(y: Int, line: Array[Int]) = data.synchronized {
     data(y) = line
-    reporter.onLineCompleted
+    reporter.onLineCompleted()
   }
 
   class ProgressReporter(val totalLines: Int, val secondsBetweenProgressReport: Int) {

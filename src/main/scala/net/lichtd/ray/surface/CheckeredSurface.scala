@@ -4,6 +4,7 @@ package net.lichtd.ray.surface
 import net.lichtd.ray.math._
 import net.lichtd.ray.scene.Intersection
 import net.lichtd.ray.shapes.{SurfaceMapper, SphericalSurfaceMapper}
+
 class CheckeredSurface[T <: SurfaceMapper](
          val target: T,
          val white: SurfaceShader,
@@ -47,5 +48,5 @@ class CheckeredSurface[T <: SurfaceMapper](
 }
 
 object CheckeredSurface {
-  private class IntersectionToken(val targetSurface: SurfaceShader, val targetToken: Any)
+  class IntersectionToken(val targetSurface: SurfaceShader, val targetToken: Any)
 }
