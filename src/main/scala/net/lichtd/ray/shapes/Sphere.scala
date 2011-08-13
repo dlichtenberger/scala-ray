@@ -17,9 +17,12 @@ class Sphere(val origin: Vector, val radius: Double) extends Shape {
 
   def intersectionPoint(ray: Ray) : Option[Vector] = {
     // algebraic algorithm taken from http://www.devmaster.net/wiki/Ray-sphere_intersection
-    val dest: Vector = ray.origin - origin
-    val b: Double = dest * ray.direction
-    val c: Double = (dest * dest) - r2
+    val destX = ray.origin.x - origin.x
+    val destY = ray.origin.y - origin.y
+    val destZ = ray.origin.z - origin.z
+    val direction: Vector = ray.direction
+    val b: Double = destX * direction.x + destY * direction.y + destZ * direction.z
+    val c: Double = (destX * destX + destY * destY + destZ * destZ) - r2
     val d: Double = b*b - c
     /*val dest = new Vector3d
     dest.sub(ray.origin3d, origin3d)
@@ -32,7 +35,7 @@ class Sphere(val origin: Vector, val radius: Double) extends Shape {
       // this seems to be necessary for intersections from inside the sphere, see http://www.devmaster.net/wiki/Talk:Ray-sphere_intersection
       // this leads to false positives
       //val delta = if (t > 0) t else (-b + sqrt)
-      return if (t > 0) Some(ray.origin + (ray.direction * t)) else None
+      return if (t > 0) Some(ray.origin + (direction * t)) else None
       } else {
       return None
       }
