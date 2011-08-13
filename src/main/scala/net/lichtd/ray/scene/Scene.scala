@@ -10,14 +10,16 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   var lightSourceAbortRatio = 0.3   // percentage of total light source checks before aborting
                                     // when all checks return the same value
   var maxReflections = 2 // maximum number of times a ray might get reflected
-  var objects = List[Shape]()
+  var objectsArray = Array[Shape]()
   var lightSources = List[LightSource]()
 
-  def addShape(shape: Shape) = objects ::= shape
+  def addShape(shape: Shape) {
+    objectsArray = Array.concat(objectsArray, Array(shape))
+  }
 
-  def addShape(shape: Shape, surface: SurfaceShader) = {
+  def addShape(shape: Shape, surface: SurfaceShader) {
     shape.surface = surface
-    objects ::= shape
+    addShape(shape)
   }
 
   def addLightSource(source: LightSource) = lightSources ::= source
@@ -31,9 +33,10 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
     case true => EmptyLightResult // stop recursion
     case false =>
       var nextObj: (Intersection, Shape, Double) = null
-      val it = objects.elements
-      while (it.hasNext) {
-        val obj = it.next
+      var i = 0
+      while (i < objectsArray.length) {
+        val obj = objectsArray(i)
+        i += 1
         if (obj != from) {
           obj.intersect(ray) match {
             case Some(inter: Intersection) =>
@@ -85,9 +88,11 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
         // partially occluded/visible
         var result: Color = Color.BLACK
         // first do a coarser check to see if the light source is completely occluded/visible
-        val iter = ls.getOrigins(intersection.origin, lightSourceResolution).elements
-        while (iter.hasNext) {
-          result += processLightOrigin(ls, iter.next)
+        val origins = ls.getOrigins(intersection.origin, lightSourceResolution)
+        var i = 0
+        while (i < origins.length) {
+          result += processLightOrigin(ls, origins(i))
+          i += 1
         }
         result
     }
@@ -99,9 +104,10 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
       }
       val origins = ls.getOrigins(intersection.origin, (lightSourceResolution.toDouble * lightSourceAbortRatio).asInstanceOf[Int])
       var lastBlock : Option[Boolean] = None
-      val iterator = origins.elements
-      while (iterator.hasNext) {
-        var blocked : Boolean = getBlockingObject(target, intersection.origin, iterator.next) != None
+      var i = 0
+      while (i < origins.length) {
+        var blocked : Boolean = getBlockingObject(target, intersection.origin, origins(i)) != None
+        i += 1
         if (lastBlock == None) {
           lastBlock = Some(blocked)
         } else if (lastBlock.get != blocked) {
@@ -139,10 +145,12 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
     def getBlockingObject(target: Shape, point: Vector, lsOrigin: Vector): Option[Shape] = {
       val vector = point - lsOrigin
       val ray = new Ray(lsOrigin, vector)
-      val it = getBlockingCandidates(ray).elements
+      val candidates : Array[Shape] = getBlockingCandidates(ray)
       var result: Shape = null
-      while (it.hasNext && result == null) {
-        val obj = it.next
+      var i = 0
+      while (i < candidates.length && result == null) {
+        val obj = candidates(i)
+        i += 1
         if (!obj.eq(target)) {
           obj.intersectionPoint(ray) match {
             case Some(inter) =>
@@ -165,7 +173,8 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
      * @param ray the ray to be casted
      * @param target the target that should be reached by the ray
      */
-    protected def getBlockingCandidates(ray: Ray): List[Shape] = objects
+    protected def getBlockingCandidates(ray: Ray): Array[Shape] = objectsArray
+
   }
 
 

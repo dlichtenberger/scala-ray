@@ -7,32 +7,34 @@ class SquareLightSource(val upperLeftCorner: Vector, val right: Vector, val down
   require(right * down == 0, "Square light source: right and down vectors are not normal")
 
   // for a single ray, return the center of the lightsource
-  private val singleTracedOrigin = List(upperLeftCorner + right * 0.5 + down * 0.5)
-  private val cachedOrigins = new ConcurrentHashMap[Int, Array[List[Vector]]]
+  private val singleTracedOrigin = Array(upperLeftCorner + right * 0.5 + down * 0.5)
+  private val cachedOrigins = new ConcurrentHashMap[Int, Array[Array[Vector]]]
   private val cachedOriginCounts = new ConcurrentHashMap[Int, Int]
   private val jitteredRays = 25   // number of jittered rays for MonteCarlo sampling
 
-  private sealed case class DistributedOrigin(val origins: List[Vector], val rightStep: Vector, val downStep: Vector)
+  private sealed case class DistributedOrigin(origins: Array[Vector], rightStep: Vector, downStep: Vector)
 
-  def getOrigins(from: Vector, rays: Int) : List[Vector] = {
+  def getOrigins(from: Vector, rays: Int) : Array[Vector] = {
     if (rays <= 1) {
       return singleTracedOrigin
     }
     if (!cachedOrigins.containsKey(rays)) {
       // TODO: return sample orthogonal to the view vector (from - center of LS)
       val steps = Math.round(Math.sqrt(rays))
-      var origins = List[Vector]()
+      var origins : Array[Vector] = Array.ofDim(steps.toInt * steps.toInt)
       var y = 0
+      var idx = 0
       while (y < steps.toInt) {
         var x = 0
         while (x < steps.toInt) {
-          origins ::= upperLeftCorner + right * (x.toDouble / steps) + down * (y.toDouble / steps)
+          origins(idx) = upperLeftCorner + right * (x.toDouble / steps) + down * (y.toDouble / steps)
+          idx += 1
           x += 1
         }
         y += 1
       }
       val orig = DistributedOrigin(origins, right / steps, down / steps)
-      val jitteredOrigins = new Array[List[Vector]](jitteredRays)
+      val jitteredOrigins = new Array[Array[Vector]](jitteredRays)
       // add MonteCarlo distribution (jitter)
       var i = 0
       while (i < jitteredRays) {
@@ -47,7 +49,7 @@ class SquareLightSource(val upperLeftCorner: Vector, val right: Vector, val down
 
   override def getOriginCount(rays: Int) = {
     if (!cachedOriginCounts.containsKey(rays)) {
-      cachedOriginCounts.put(rays, getOrigins(Vector.ORIGIN, rays).size)
+      cachedOriginCounts.put(rays, getOrigins(Vector.ORIGIN, rays).length)
     }
     cachedOriginCounts.get(rays)
   }

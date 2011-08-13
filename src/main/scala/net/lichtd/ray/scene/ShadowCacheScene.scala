@@ -29,8 +29,7 @@ trait ShadowCacheScene extends Scene {
       if (lastBlock == null) {
         super.getBlockingCandidates(ray)
       } else {
-        var candidates = super.getBlockingCandidates(ray)
-        lastBlock :: candidates // try last blocking object first
+        Array.concat(Array(lastBlock), super.getBlockingCandidates(ray))
       }
     }
   }

@@ -4,9 +4,9 @@ import net.lichtd.ray.math.Color
 import net.lichtd.ray.math.Vector
 
 class PointLightSource(val origin: Vector, color: Color) extends LightSource(color) {
-  private val origins = List(origin)
+  private val origins = Array(origin)
 
-  def getOrigins(from: Vector, resolution: Int) : List[Vector] = origins
+  def getOrigins(from: Vector, resolution: Int) : Array[Vector] = origins
 
   override def getOriginCount(rays: Int) = 1
 }
