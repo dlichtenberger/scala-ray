@@ -24,11 +24,12 @@ trait KDTreeScene extends Scene {
 
   override def walkScene[T](from: Shape, ray: Ray, 
                             interFunc: (Shape, Ray) => Option[T], 
-                            func: (Shape, T) => Boolean) : Unit = {
+                            func: (Shape, T) => Boolean,
+                            interExtractor: T => Vector) : Unit = {
     if (!enabled) {
-      super.walkScene(from, ray, interFunc, func)
+      super.walkScene(from, ray, interFunc, func, interExtractor)
     } else {
-      walkNodes(from, ray, kdtree, 0, 9999, ray.direction.toArray, ray.origin.toArray, interFunc, func)
+      walkNodes(from, ray, kdtree, 0, 9999, ray.direction.toArray, ray.origin.toArray, interFunc, func, interExtractor, 0, 0)
     }
   }
 
@@ -36,7 +37,10 @@ trait KDTreeScene extends Scene {
                         direction: Array[Double],  // unwrapped from ray for faster access
                         origin: Array[Double],     // unwrapped from ray for faster access
                         interFunc: (Shape, Ray) => Option[T],
-                        func: (Shape, T) => Boolean) : Boolean = {
+                        func: (Shape, T) => Boolean,
+                        interExtractor: T => Vector,
+                        splitPos: Double,
+                        splitAxis: Int) : Boolean = {
     if (node.leaf) {
       var done = false;
       var checks = 0
@@ -46,7 +50,18 @@ trait KDTreeScene extends Scene {
         if (obj != from) {
           checks += 1
           interFunc(obj, ray) match {
-            case Some(inter: T)    => done |= func(obj, inter)
+            case Some(inter: T)    =>
+              val result = func(obj, inter)
+              if (result) {
+                // check if we can stop processing here - only if the intersection was on "our side" of the bounding box,
+                // to fix the edge case where a ray hits an object spanning both nodes of a tree
+                // first in the near node, and then does not check if it is occluded by an object in the far node
+                val diraxis = direction(splitAxis % 3)
+                val interPos = interExtractor(inter).toArray(splitAxis % 3)
+                if ((diraxis > 0 && interPos <= splitPos) || (diraxis < 0 && interPos >= splitPos)) {
+                  done |= result
+                }
+              }
             case None => // continue
           }
         }
@@ -71,26 +86,26 @@ trait KDTreeScene extends Scene {
       val tsplit = (node.coord - origaxis) / diraxis
       if (tsplit > tmax) {
         //println("Checking only near (tsplit=" + tsplit + ", minc=" + node.minCoord + ")")
-        return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func)
+        return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
       } else if (tsplit < tmin) {
         //println("Checking only far")
-        return walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func)
+        return walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
       } else {
         //println("Checking both")
-        return walkNodes(from, ray, near, tmin, tsplit, direction, origin, interFunc, func) ||
-               walkNodes(from, ray, far, tsplit, tmax, direction, origin, interFunc, func)
+        return walkNodes(from, ray, near, tmin, tsplit, direction, origin, interFunc, func, interExtractor, node.coord, node.axis) ||
+               walkNodes(from, ray, far, tsplit, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
       }
     } else {
-      return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func) ||
-             walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func)
+      return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis) ||
+             walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
     }
   }
 
 }
 
 object KDTree {
-  private val SIZE_CUTOFF = 3    // no split below this number of primitives in a tree
-  private val DEPTH_CUTOFF = 10  // no split below this cutoff value
+  private val SIZE_CUTOFF = 5    // no split below this number of primitives in a tree
+  private val DEPTH_CUTOFF = 5  // no split below this cutoff value
 
   def create(shapes: Seq[Shape]) : KDTree = create(shapes, 0, 0) 
 
