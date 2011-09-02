@@ -72,7 +72,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
    * (in the simple scene there is only one group, but e.g. in kd-trees one could
    * stop after hitting an object in a tree node)
    */
-   def walkScene[T](from: Shape, ray: Ray, interFunc: (Shape, Ray) => Option[T], func: (Shape, T) => Boolean, interExtractor: T => Vector) : Unit = {
+   def walkScene[T](from: Shape, ray: Ray, interFunc: (Shape, Ray) => Option[T], func: (Shape, T) => Boolean, interExtractor: T => Vector) {
     // unordered traversal across all shapes in the scene
     var checks = 0
     for (obj <- objects) {

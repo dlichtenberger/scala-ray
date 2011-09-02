@@ -36,10 +36,11 @@ trait KDTreeScene extends Scene {
   private def walkNodes[T](from: Shape, ray: Ray, node: KDTree, tmin: Double, tmax: Double,
                         direction: Array[Double],  // unwrapped from ray for faster access
                         origin: Array[Double],     // unwrapped from ray for faster access
-                        interFunc: (Shape, Ray) => Option[T],
-                        func: (Shape, T) => Boolean,
-                        interExtractor: T => Vector,
-                        splitPos: Double,
+                        interFunc: (Shape, Ray) => Option[T], // calculates the intersection
+                        callback: (Shape, T) => Boolean,      // process an intersection and returns true to abort
+                                                              // processing after this tree node
+                        interExtractor: T => Vector,          // extract the intersection point from a T
+                        splitPos: Double,         // the split position and axis of the parent node
                         splitAxis: Int) : Boolean = {
     if (node.leaf) {
       var done = false;
@@ -51,7 +52,7 @@ trait KDTreeScene extends Scene {
           checks += 1
           interFunc(obj, ray) match {
             case Some(inter: T)    =>
-              val result = func(obj, inter)
+              val result = callback(obj, inter)
               if (result) {
                 // check if we can stop processing here - only if the intersection was on "our side" of the bounding box,
                 // to fix the edge case where a ray hits an object spanning both nodes of a tree
@@ -86,18 +87,18 @@ trait KDTreeScene extends Scene {
       val tsplit = (node.coord - origaxis) / diraxis
       if (tsplit > tmax) {
         //println("Checking only near (tsplit=" + tsplit + ", minc=" + node.minCoord + ")")
-        return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
+        return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, callback, interExtractor, node.coord, node.axis)
       } else if (tsplit < tmin) {
         //println("Checking only far")
-        return walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
+        return walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, callback, interExtractor, node.coord, node.axis)
       } else {
         //println("Checking both")
-        return walkNodes(from, ray, near, tmin, tsplit, direction, origin, interFunc, func, interExtractor, node.coord, node.axis) ||
-               walkNodes(from, ray, far, tsplit, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
+        return walkNodes(from, ray, near, tmin, tsplit, direction, origin, interFunc, callback, interExtractor, node.coord, node.axis) ||
+               walkNodes(from, ray, far, tsplit, tmax, direction, origin, interFunc, callback, interExtractor, node.coord, node.axis)
       }
     } else {
-      return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis) ||
-             walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, func, interExtractor, node.coord, node.axis)
+      return walkNodes(from, ray, near, tmin, tmax, direction, origin, interFunc, callback, interExtractor, node.coord, node.axis) ||
+             walkNodes(from, ray, far, tmin, tmax, direction, origin, interFunc, callback, interExtractor, node.coord, node.axis)
     }
   }
 
