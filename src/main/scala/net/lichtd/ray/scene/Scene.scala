@@ -32,7 +32,9 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   def cast(from: Shape, ray: Ray): LightResult = (ray.iteration > maxReflections) match {
     case true => EmptyLightResult // stop recursion
     case false =>
-      var nextObj: (Intersection, Shape, Double) = null
+      var minInter: Intersection = null
+      var minShape: Shape = null
+      var minDistance: Double = 0
       var i = 0
       while (i < objectsArray.length) {
         val obj = objectsArray(i)
@@ -41,16 +43,18 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
           obj.intersect(ray) match {
             case Some(inter: Intersection) =>
               val distance = (inter.origin - ray.origin).length
-              if (nextObj == null || distance < nextObj._3) {
-                nextObj = (inter, obj, distance)
+              if (minInter == null || distance < minDistance) {
+                minInter = inter
+                minShape = obj
+                minDistance = distance
               }
             case None => // try next
           }
         }
       }
 
-      if (nextObj != null) 
-        calculateLighting(ray, nextObj._2, nextObj._1)
+      if (minShape != null)
+        calculateLighting(ray, minShape, minInter)
       else
         EmptyLightResult
   }
