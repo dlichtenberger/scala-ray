@@ -10,7 +10,7 @@ class Sphere(val origin: Vector, val radius: Double) extends Shape {
   def intersect(ray: Ray) : Option[Intersection]
   = intersectionPoint(ray) match {
     case Some(point: Vector) =>
-      Some(new Intersection(point, (point - origin).normalize))
+      Some(new Intersection(point, (point - origin).normalize()))
     case None =>  None
   }
 
@@ -31,26 +31,26 @@ class Sphere(val origin: Vector, val radius: Double) extends Shape {
     val d = b*b - c*/
     if (d > 0) {
       val sqrt = Math.sqrt(d)
-      val t = (-b - sqrt)
+      val t = -b - sqrt
       // this seems to be necessary for intersections from inside the sphere, see http://www.devmaster.net/wiki/Talk:Ray-sphere_intersection
       // this leads to false positives
       //val delta = if (t > 0) t else (-b + sqrt)
-      return if (t > 0) Some(ray.origin + (direction * t)) else None
-      } else {
-      return None
-      }
+      if (t > 0) Some(ray.origin + (direction * t)) else None
+    } else {
+      None
     }
+  }
 
   // SphericalSurfaceMapper implementation
   def getSurfaceCoordinates(surfacePoint: Vector, north: Vector, equator: Vector) : Vector2D = {
     // convert to (u, v) coordinates using spherical coordinates
     // taken from http://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html
-    val vp = (surfacePoint - origin).normalize
+    val vp = (surfacePoint - origin).normalize()
 
     val phi = Math.acos(-(north * vp))
     val v = phi / math.Pi
 
-    val theta = (Math.acos((vp * equator) / Math.sin(phi))) / (2 * math.Pi)
+    val theta = Math.acos((vp * equator) / Math.sin(phi)) / (2 * math.Pi)
     val u = if ((north cross equator) * vp > 0) theta else 1 - theta
 
     // (u, v) represent the position in a [0, 1] square

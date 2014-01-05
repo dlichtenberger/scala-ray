@@ -2,7 +2,6 @@ package net.lichtd.ray
 
 import net.lichtd.ray.maths.Vector
 import net.lichtd.ray.maths.Color._
-import scala.collection.mutable.HashMap
 import scala.math
 import java.io.File
 import java.awt.image.BufferedImage
@@ -11,6 +10,7 @@ import output.Screen
 import scene._
 import shapes.{Sphere, SphericalSurfaceMapper, Plane}
 import surface.{TexturedSurface, CheckeredSurface, ColoredSurface}
+import scala.collection.mutable
 
 object ExampleScenes {
     
@@ -58,14 +58,14 @@ object ExampleScenes {
     val earthRotation = - math.Pi / 2 / steps * currentStep
     val screen = new Screen(new ViewPoint(
       new Vector(fromX * 2, 1.3, -(fromX + 0.67) * 18),    // from
-      new Vector(-fromX / 4, -0.1, 1).normalize,    // direction 
+      new Vector(-fromX / 4, -0.1, 1).normalize(),    // direction
       new Vector(0, 1, 0)),      // up
       DColor(0.2),           // ambient light
       screenWidth, screenHeight)
     with ShadowCacheScene
     // "earth"
     val sphere = new Sphere(new Vector(0, -200, 1000), 500) with SphericalSurfaceMapper {
-      val north = new Vector(0, 1, 0.2).normalize
+      val north = new Vector(0, 1, 0.2).normalize()
       val equator = new Vector(1, 0, 0).rotateAround(north, earthRotation)
     }
     //println("*** phi=" + earthRotation + ", EQUATOR = " + sphere.equator)
@@ -101,7 +101,7 @@ object ExampleScenes {
   def test03_plane_horizon(screenWidth: Int, screenHeight: Int) : Screen = {
     val screen = new Screen(new ViewPoint(
       new Vector(0, 1.3, -2.0),    // from
-      new Vector(0, 0, 1).normalize,    // direction
+      new Vector(0, 0, 1).normalize(),    // direction
       new Vector(0, 1, 0)),      // up
       DColor(0.5),           // ambient light
       screenWidth, screenHeight)
@@ -214,7 +214,8 @@ object ExampleScenes {
     screen
   }
 
-  val cachedTextures = new HashMap[String, Array[Array[Int]]]()
+  val cachedTextures = new mutable.HashMap[String, Array[Array[Int]]]()
+
   private def extractLine(bi: BufferedImage, line: Int) : Array[Int] = {
     val result = new Array[Int](bi.getWidth)
     bi.getRGB(0, line, bi.getWidth, 1, result, 0, 1)

@@ -14,19 +14,19 @@ object TGAWriter extends ImageWriter {
     val header = new Array[Byte](18)
     val height = data.length
     val width = data(0).length
-    header(2) = 2   // 24 bit uncompressed
+    header(2) = 2.toByte   // 24 bit uncompressed
     header(12) = width.toByte
     header(13) = (width >> 8).toByte
     header(14) = height.toByte
     header(15) = (height >> 8).toByte
-    header(16) = 32
+    header(16) = 32.toByte
 
     val bb = ByteBuffer.allocate(data.length * data(0).length * 4 + header.length)
     bb.put(header)
-    data.foreach(_.foreach(bb.putInt(_)))
+    data.foreach(_.foreach(bb.putInt))
     bb.flip
     out.write(bb)
-    out.close
-    outStream.close
+    out.close()
+    outStream.close()
   }
 }

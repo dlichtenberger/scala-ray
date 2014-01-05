@@ -21,12 +21,12 @@ final class Vector(val x: Double, val y: Double, val z: Double, val forceNormali
 
   def rotateAround(_axis: Vector, theta: Double) = {
     assert(normalized)
-    val axis = _axis.normalize
+    val axis = _axis.normalize()
     // taken from http://www.gamedev.net/community/forums/topic.asp?topic_id=198844
     // (corrected parentheses before cos() on the first expression) 
     ((this - (axis * (axis * this))) * Math.cos(theta) +
-    ((this cross axis) * Math.sin(theta)) +
-    (axis * (axis * this))).normalize
+      ((this cross axis) * Math.sin(theta)) +
+      (axis * (axis * this))).normalize()
   }
 
   def reflectAround(n: Vector) = n * (n * this * 2) - this

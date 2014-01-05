@@ -68,7 +68,7 @@ object App {
       println(" scene-no : [1-5]")
       println(" quality  : [PREVIEW, LOW, NORMAL, HIGH, ULTRA]")
       println()
-      exit(1)
+      sys.exit(1)
     }
 
     val scene = Integer.parseInt(args(0))
@@ -97,12 +97,12 @@ object App {
     } else if (scene == 3) {
       process(ExampleScenes.test03_plane_horizon(width, height), 0, quality)
     } else if (scene == 4) {
-       process(ExampleScenes.test04_plane_pool(width, height, true), 0, quality)
+       process(ExampleScenes.test04_plane_pool(width, height, useTextures = true), 0, quality)
     } else if (scene == 5) {
        process(ExampleScenes.test05_spheregrid(width, height), 0, quality) 
     } else {
         println("Unknown scene: " + scene)
-        exit(1)
+        sys.exit(1)
     }
   }
 
@@ -111,7 +111,7 @@ object App {
     val screen = _screen
     quality.apply(screen)
     //screen.lightSourceResolution = 1
-    val printInfo = (iteration % 10 == 0)
+    val printInfo = iteration % 10 == 0
     if (printInfo) {
       println("Init Scene:        " + (System.currentTimeMillis - startInit) + "ms")
     }
@@ -121,8 +121,8 @@ object App {
       println("Rendering:         " + (System.currentTimeMillis - startRender) + "ms")
     }
     val startWrite = System.currentTimeMillis
-    val filename = String.format("out/test_%05d.tga", iteration.asInstanceOf[Object])
-    result.toFile(filename)
+    val filename = "out/test_%05d.tga".format(iteration)
+    result.writeImage(filename)
     if (printInfo) {
       println("Wrote " + filename)
       println("File output:       " + (System.currentTimeMillis - startWrite) + "ms")

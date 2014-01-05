@@ -5,6 +5,6 @@ object NumberUtils {
 
   def equal(v1: Double, v2: Double) : Boolean = {
     val diff = v1 - v2
-    return diff < PREC && diff > -PREC
+    diff < PREC && diff > -PREC
   }
 }

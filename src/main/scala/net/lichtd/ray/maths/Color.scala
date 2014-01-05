@@ -50,8 +50,8 @@ object Color {
     new Color(_red.toDouble / 256.0, _green.toDouble / 256.0, _blue.toDouble / 256.0)
 
   def RGBColor(rgb: Int) = IColor(
-    ((rgb >> 16) & 0xFF),
-    ((rgb >> 8) & 0xFF),
-    (rgb & 0xFF)
-    )
+    (rgb >> 16) & 0xFF,
+    (rgb >> 8) & 0xFF,
+    rgb & 0xFF
+  )
 }

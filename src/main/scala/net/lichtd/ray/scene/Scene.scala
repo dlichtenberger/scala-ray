@@ -29,7 +29,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
   def createBlockFinder(ray: Ray, target: Shape, intersection: Intersection, intersectionToken: Any)
       = new BlockFinder(ray, target, intersection, intersectionToken)
 
-  def cast(from: Shape, ray: Ray): LightResult = (ray.iteration > maxReflections) match {
+  def cast(from: Shape, ray: Ray): LightResult = ray.iteration > maxReflections match {
     case true => EmptyLightResult // stop recursion
     case false =>
       var minInter: Intersection = null
@@ -59,7 +59,8 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
         EmptyLightResult
   }
 
-  case class LightResult(val color: Color, val shape: Option[Shape], val visibleLightSources: Int)
+  case class LightResult(color: Color, shape: Option[Shape], visibleLightSources: Int)
+
   object EmptyLightResult extends LightResult(Color.BLACK, None, 0)
 
   def calculateLighting(ray: Ray, target: Shape, intersection: Intersection): LightResult = {
@@ -77,7 +78,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
     val blockFinder = createBlockFinder(ray, target, intersection, token)
     val it = lightSources.iterator
     while (it.hasNext) {
-      color += blockFinder.shadeTarget(it.next)
+      color += blockFinder.shadeTarget(it.next())
     }
     LightResult(color, Some(target), blockFinder.visibleLightSources)
   }
@@ -110,7 +111,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
       var lastBlock : Option[Boolean] = None
       var i = 0
       while (i < origins.length) {
-        var blocked : Boolean = getBlockingObject(target, intersection.origin, origins(i)) != None
+        val blocked = getBlockingObject(target, intersection.origin, origins(i)).isDefined
         i += 1
         if (lastBlock == None) {
           lastBlock = Some(blocked)
@@ -128,7 +129,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
           // not blocked, shade surface
           Some(target.surface.shade(token,
                                     -ray.direction, intersection,
-                                    (ls.getOrigins(intersection.origin, 1)(0) - intersection.origin).normalize,
+                                    (ls.getOrigins(intersection.origin, 1)(0) - intersection.origin).normalize(),
                                     ls.color, ambientLight
             ))
       }
@@ -141,7 +142,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
         case None =>
           target.surface.shade(token,
             -ray.direction, intersection,
-            (origin - intersection.origin).normalize, ls.color, ambientLight
+            (origin - intersection.origin).normalize(), ls.color, ambientLight
             ) / ls.getOriginCount(lightSourceResolution)
       }
     }

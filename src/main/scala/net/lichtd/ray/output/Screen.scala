@@ -86,7 +86,7 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
     (0 to height - 1).par.map(renderLine(imageWriter, _))
 
     // TODO: clone data?
-    return new RenderedScene(imageWriter, data)
+    new RenderedScene(imageWriter, data)
   }
 
   def put(y: Int, line: Array[Int]) = data.synchronized {

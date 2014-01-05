@@ -21,7 +21,7 @@ class SquareLightSource(val upperLeftCorner: Vector, val right: Vector, val down
     if (!cachedOrigins.containsKey(rays)) {
       // TODO: return sample orthogonal to the view vector (from - center of LS)
       val steps = Math.round(Math.sqrt(rays))
-      var origins : Array[Vector] = Array.ofDim(steps.toInt * steps.toInt)
+      val origins : Array[Vector] = Array.ofDim(steps.toInt * steps.toInt)
       var y = 0
       var idx = 0
       while (y < steps.toInt) {
