@@ -16,9 +16,9 @@ class SphericalLightSource(val origin: Vector, size: Double, color: Color)
 
     // return sets of rays origin points for montecarlo sampling
     val samples: Int = 250
-    var result : Array[Array[Vector]] = Array.ofDim(samples, rays)
+    val result : Array[Array[Vector]] = Array.ofDim(samples, rays)
     for (i <- 0 until samples) {
-      var origins: Array[Vector] = Array.ofDim(rays)
+      val origins: Array[Vector] = Array.ofDim(rays)
       val rnd = new Random
       for (j <- 0 until rays) {
         origins(j) = new Vector(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble()) * size
