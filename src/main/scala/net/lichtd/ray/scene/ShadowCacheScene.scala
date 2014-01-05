@@ -3,6 +3,7 @@ package net.lichtd.ray.scene
 
 import net.lichtd.ray.maths.Vector
 import net.lichtd.ray.shapes.Shape
+import net.lichtd.ray.Utils
 
 /**
  * Extends Scene with a shadow cache
@@ -26,10 +27,11 @@ trait ShadowCacheScene extends Scene {
 
 
     override protected def getBlockingCandidates(ray: Ray) = {
+      val result = super.getBlockingCandidates(ray)
       if (lastBlock == null) {
-        super.getBlockingCandidates(ray)
+        result
       } else {
-        Array.concat(Array(lastBlock), super.getBlockingCandidates(ray))
+        Utils.arrayPrepend(lastBlock, result)
       }
     }
   }
