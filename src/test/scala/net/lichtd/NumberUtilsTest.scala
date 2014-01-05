@@ -2,7 +2,7 @@ package net.lichtd
 
 import org.junit._
 import Assert._
-import net.lichtd.ray.math.NumberUtils
+import net.lichtd.ray.maths.NumberUtils
 
 @Test
 class NumberUtilsTest {

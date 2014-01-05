@@ -1,12 +1,11 @@
 package net.lichtd
 
-import _root_.net.lichtd.ray.math.Color
+import _root_.net.lichtd.ray.maths.Color
 import ray.scene.ViewPoint
 import ray.output.Screen
 import org.junit._
 import Assert._
-import ray._
-import ray.math.Vector
+import ray.maths.Vector
 
 @Test
 class ScreenTest {

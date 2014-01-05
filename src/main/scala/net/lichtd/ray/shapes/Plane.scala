@@ -1,8 +1,8 @@
 package net.lichtd.ray.shapes
 
 
-import _root_.scala.{None}
-import net.lichtd.ray.math.{NumberUtils, Vector2D, Vector}
+import _root_.scala.None
+import net.lichtd.ray.maths.{NumberUtils, Vector}
 import net.lichtd.ray.scene.{Intersection, Ray}
 
 class Plane(val normal: Vector, val distance: Double) extends Shape {

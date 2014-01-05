@@ -1,6 +1,6 @@
 package net.lichtd.ray.output
 
-import net.lichtd.ray.math.Color
+import net.lichtd.ray.maths.Color
 
 abstract class ImageWriter {
   def toInternal(red: Int, green: Int, blue: Int): Int

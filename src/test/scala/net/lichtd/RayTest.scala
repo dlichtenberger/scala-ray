@@ -1,10 +1,9 @@
 package net.lichtd
 
 
-import _root_.net.lichtd.ray.math.{Color, Vector}
+import _root_.net.lichtd.ray.maths.{Color, Vector}
 import org.junit._
-import Assert._
-import ray.math.NumberUtils
+import ray.maths.NumberUtils
 @Test
 class RayTest {
 

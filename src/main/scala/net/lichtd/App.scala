@@ -2,15 +2,11 @@ package net.lichtd
 
 import java.io.File
 import net.lichtd.ray._
-import net.lichtd.ray.scene.{ViewPoint, LightSource}
-import net.lichtd.ray.shapes.{Sphere, SphericalSurfaceMapper}
-import net.lichtd.ray.surface.{CheckeredSurface, ColoredSurface}
 import net.lichtd.ray.output.{Screen,TGAWriter}
 
-import net.lichtd.ray.math.{Color, Vector}
 
 object App {
-  sealed abstract case class Quality() {
+  sealed abstract class Quality() {
     def apply(screen: Screen)
   }
 

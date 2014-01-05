@@ -1,6 +1,6 @@
 package net.lichtd.ray.scene
 
-import net.lichtd.ray.math.Vector
+import net.lichtd.ray.maths.Vector
 
 class ViewPoint(val origin: Vector, _direction: Vector, _up: Vector) {
   val direction = _direction.normalize

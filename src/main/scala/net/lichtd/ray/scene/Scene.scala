@@ -1,7 +1,7 @@
 package net.lichtd.ray.scene
 
 
-import net.lichtd.ray.math._
+import net.lichtd.ray.maths._
 import net.lichtd.ray.shapes.Shape
 import net.lichtd.ray.surface.SurfaceShader
 
@@ -75,7 +75,7 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
             (ambientLight * target.surface.getAmbient(token, intersection))
     // calculate lightsources
     val blockFinder = createBlockFinder(ray, target, intersection, token)
-    val it = lightSources.elements
+    val it = lightSources.iterator
     while (it.hasNext) {
       color += blockFinder.shadeTarget(it.next)
     }
@@ -175,7 +175,6 @@ class Scene(val viewPoint: ViewPoint, val ambientLight: Color) {
      * Returns the shapes that should be checked for a collision with the given ray.
      *
      * @param ray the ray to be casted
-     * @param target the target that should be reached by the ray
      */
     protected def getBlockingCandidates(ray: Ray): Array[Shape] = objectsArray
 

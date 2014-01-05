@@ -1,6 +1,6 @@
 package net.lichtd
 
-import _root_.net.lichtd.ray.math.Vector
+import _root_.net.lichtd.ray.maths.Vector
 import org.junit.Test
 import ray.scene.ViewPoint
 

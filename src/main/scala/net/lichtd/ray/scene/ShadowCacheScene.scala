@@ -1,8 +1,8 @@
 package net.lichtd.ray.scene
 
 
-import net.lichtd.ray.math.Vector
-import net.lichtd.ray.shapes.{Shape, Sphere}
+import net.lichtd.ray.maths.Vector
+import net.lichtd.ray.shapes.Shape
 
 /**
  * Extends Scene with a shadow cache

@@ -1,7 +1,7 @@
 package net.lichtd.ray.surface
 
-import net.lichtd.ray.math.{Vector2D, Color}
-import net.lichtd.ray.math.Color.RGBColor
+import net.lichtd.ray.maths.{Vector2D, Color}
+import net.lichtd.ray.maths.Color.RGBColor
 import net.lichtd.ray.scene.Intersection
 import net.lichtd.ray.shapes.SurfaceMapper
 

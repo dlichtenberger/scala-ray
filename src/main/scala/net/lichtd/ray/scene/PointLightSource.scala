@@ -1,7 +1,7 @@
 package net.lichtd.ray.scene
 
-import net.lichtd.ray.math.Color
-import net.lichtd.ray.math.Vector
+import net.lichtd.ray.maths.Color
+import net.lichtd.ray.maths.Vector
 
 class PointLightSource(val origin: Vector, color: Color) extends LightSource(color) {
   private val origins = Array(origin)

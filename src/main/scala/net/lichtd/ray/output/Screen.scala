@@ -2,7 +2,7 @@ package net.lichtd.ray.output
 
 
 import net.lichtd.ray.scene._
-import net.lichtd.ray.math._
+import net.lichtd.ray.maths._
 
 class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val height: Int, val aspectRatio: Double)
         extends Scene(_viewPoint, _ambientLight) {
@@ -13,7 +13,7 @@ class Screen(_viewPoint: ViewPoint, _ambientLight: Color, val width: Int, val he
 
   final val deltaCol : Vector = viewPoint.right / (width.toDouble / viewPoint.viewPlaneDistance / aspectRatio)
   final val deltaRow : Vector = viewPoint.up / (height.toDouble / viewPoint.viewPlaneDistance)
-  final val data = new Array[Array[Int]](height, width)
+  final val data = Array.ofDim[Int](height, width)
   final val reporter = new ProgressReporter(height, 60)
 
   def getRay(x: Double, y: Double) : Ray =

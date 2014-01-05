@@ -1,11 +1,9 @@
 package net.lichtd.ray
 
-import net.lichtd.ray.math.{Color, Vector}
-import net.lichtd.ray.math.Color._
+import net.lichtd.ray.maths.Vector
+import net.lichtd.ray.maths.Color._
 import scala.collection.mutable.HashMap
-import scala.actors.Actor
-import scala.actors.Actor._
-
+import scala.math
 import java.io.File
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -56,8 +54,8 @@ object ExampleScenes {
   }
 
   def test02_earth(screenWidth: Int, screenHeight: Int, currentStep: Int, steps: Int) : Screen = {
-    val fromX = 0.75 - 1.9 * Math.sin(currentStep * Math.Pi / steps / 3)
-    val earthRotation = - Math.Pi / 2 / steps * currentStep
+    val fromX = 0.75 - 1.9 * Math.sin(currentStep * math.Pi / steps / 3)
+    val earthRotation = - math.Pi / 2 / steps * currentStep
     val screen = new Screen(new ViewPoint(
       new Vector(fromX * 2, 1.3, -(fromX + 0.67) * 18),    // from
       new Vector(-fromX / 4, -0.1, 1).normalize,    // direction 
@@ -92,7 +90,7 @@ object ExampleScenes {
       val center = new Vector(Math.cos(phi) * distance, Math.sin(phi) * 0.3 + Math.cos(phi) * 0.5, Math.sin(phi) * distance)
       val asteroid = new Sphere(redSphere.origin + center, 0.1)
       screen.addShape(asteroid, new ColoredSurface(DColor(0.5), 20, 0))
-      phi += 2 * Math.Pi / beltSize
+      phi += 2 * math.Pi / beltSize
     }
 
 //    screen.addLightSource(new SquareLightSource(new Vector(-1, 1.5, -10), new Vector(1, 0, 0), new Vector(0, 1, 0), DColor(0.5)))
@@ -146,8 +144,8 @@ object ExampleScenes {
     val ballOrder = List(9, 7, 12, 15, 8, 1, 6, 10, 3, 14, 11, 2, 13, 4, 5)
     var ballNum = 0
     val rotationRnd = new scala.util.Random(4)
-    for (val row <- 0 to 4) {
-      for (val col <- 0 to row) {
+    for (row <- 0 to 4) {
+      for (col <- 0 to row) {
         val ball = new Sphere(
             new Vector(0, ballRadius, 0)  // place on green
                 + peak                    // move to peak
@@ -157,8 +155,8 @@ object ExampleScenes {
                 - (row + 1)   // account for total balls
                 + col * 2     // goto column
               ), ballRadius) with SphericalSurfaceMapper {
-                val north = new Vector(0, 1, 0).rotateAround(new Vector(1, 0, 0), (rotationRnd.nextDouble - 1) * Math.Pi / 4)
-                val equator = new Vector(1, 0, 0).rotateAround(north, (rotationRnd.nextDouble + 1) * Math.Pi / 4)
+                val north = new Vector(0, 1, 0).rotateAround(new Vector(1, 0, 0), (rotationRnd.nextDouble - 1) * math.Pi / 4)
+                val equator = new Vector(1, 0, 0).rotateAround(north, (rotationRnd.nextDouble + 1) * math.Pi / 4)
               }
         if (useTextures) {
           // use ball textures from textures/poolball

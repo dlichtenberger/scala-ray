@@ -1,7 +1,7 @@
 package net.lichtd.ray.shapes
 
 
-import net.lichtd.ray.math.{Color, Vector}
+import net.lichtd.ray.maths.Vector
 import net.lichtd.ray.scene.{Intersection, Ray}
 
 import net.lichtd.ray.surface.SurfaceShader

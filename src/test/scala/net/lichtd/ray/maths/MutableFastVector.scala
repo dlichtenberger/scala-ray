@@ -1,4 +1,4 @@
-package net.lichtd.ray.math
+package net.lichtd.ray.maths
 
 import javax.vecmath.Vector3d
 

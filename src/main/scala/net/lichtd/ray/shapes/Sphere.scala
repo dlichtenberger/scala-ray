@@ -1,6 +1,6 @@
 package net.lichtd.ray.shapes
 
-import net.lichtd.ray.math.{Vector2D, Vector}
+import net.lichtd.ray.maths.{Vector2D, Vector}
 import net.lichtd.ray.scene.{Intersection, Ray}
 
 class Sphere(val origin: Vector, val radius: Double) extends Shape {
@@ -48,9 +48,9 @@ class Sphere(val origin: Vector, val radius: Double) extends Shape {
     val vp = (surfacePoint - origin).normalize
 
     val phi = Math.acos(-(north * vp))
-    val v = phi / Math.Pi
+    val v = phi / math.Pi
 
-    val theta = (Math.acos((vp * equator) / Math.sin(phi))) / (2 * Math.Pi)
+    val theta = (Math.acos((vp * equator) / Math.sin(phi))) / (2 * math.Pi)
     val u = if ((north cross equator) * vp > 0) theta else 1 - theta
 
     // (u, v) represent the position in a [0, 1] square

@@ -1,7 +1,7 @@
 package net.lichtd.ray.scene
 
-import net.lichtd.ray.math.{Color, Vector}
-import java.util.concurrent.{ConcurrentHashMap}
+import net.lichtd.ray.maths.{Color, Vector}
+import java.util.concurrent.ConcurrentHashMap
 
 class SquareLightSource(val upperLeftCorner: Vector, val right: Vector, val down: Vector, color: Color) extends LightSource(color) {
   require(right * down == 0, "Square light source: right and down vectors are not normal")

@@ -1,14 +1,11 @@
 package net.lichtd
 
 
-import net.lichtd.ray.math.{Color, Vector}
-import net.lichtd.ray.surface.SurfaceShader
+import net.lichtd.ray.maths.Vector
 import net.lichtd.ray.shapes.{Shape, Sphere}
 
 import net.lichtd.ray.scene.{Intersection, Ray}
 import org.junit._
-import Assert._
-import net.lichtd.ray._
 
 @Test
 class ShapesTest {

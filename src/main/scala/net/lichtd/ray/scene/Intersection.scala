@@ -1,6 +1,6 @@
 package net.lichtd.ray.scene
 
-import net.lichtd.ray.math.Vector
+import net.lichtd.ray.maths.Vector
 
 class Intersection(val origin: Vector, val surfaceNormal: Vector) {
   def reflect(in: Vector) : Vector =

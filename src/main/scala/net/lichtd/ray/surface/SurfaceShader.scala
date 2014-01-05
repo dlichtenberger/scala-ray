@@ -1,9 +1,8 @@
 package net.lichtd.ray.surface
 
 
-import net.lichtd.ray.math._
+import net.lichtd.ray.maths._
 import net.lichtd.ray.scene.Intersection
-import net.lichtd.ray.shapes._
 
 abstract class SurfaceShader(val reflectionCoeff: Double, val specularCoeff: Double) {
 

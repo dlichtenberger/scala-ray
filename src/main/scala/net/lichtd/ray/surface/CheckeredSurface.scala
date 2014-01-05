@@ -1,9 +1,9 @@
 package net.lichtd.ray.surface
 
 
-import net.lichtd.ray.math._
+import net.lichtd.ray.maths._
 import net.lichtd.ray.scene.Intersection
-import net.lichtd.ray.shapes.{SurfaceMapper, SphericalSurfaceMapper}
+import net.lichtd.ray.shapes.SurfaceMapper
 
 class CheckeredSurface[T <: SurfaceMapper](
          val target: T,

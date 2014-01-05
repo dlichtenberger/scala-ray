@@ -1,6 +1,6 @@
 package net.lichtd.ray.shapes
 
-import net.lichtd.ray.math.{Vector2D, Vector}
+import net.lichtd.ray.maths.{Vector2D, Vector}
 
 trait SphericalSurfaceMapper extends SurfaceMapper {
   val north : Vector

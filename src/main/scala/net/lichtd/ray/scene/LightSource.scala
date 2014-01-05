@@ -1,7 +1,7 @@
 package net.lichtd.ray.scene
 
-import net.lichtd.ray.math.Color
-import net.lichtd.ray.math.Vector
+import net.lichtd.ray.maths.Color
+import net.lichtd.ray.maths.Vector
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class LightSource(val color: Color) {
