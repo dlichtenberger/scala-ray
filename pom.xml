@@ -56,8 +56,9 @@
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.1.6</version>
                 <executions>
                     <execution>
                         <goals>
@@ -67,7 +68,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
                     <args>
                         <arg>-target:jvm-1.7</arg>
                         <arg>-optimise</arg>
