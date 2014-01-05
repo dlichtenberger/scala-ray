@@ -18,10 +18,10 @@ class SphericalLightSource(val origin: Vector, size: Double, color: Color)
     val samples: Int = 250
     var result : Array[Array[Vector]] = Array.ofDim(samples, rays)
     for (i <- 0 until samples) {
-      var origins = Array[Vector]()
+      var origins: Array[Vector] = Array.ofDim(rays)
       val rnd = new Random
       for (j <- 0 until rays) {
-        origins(j) = origin + (new Vector(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble()) * size)
+        origins(j) = new Vector(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble()) * size
       }
       result(i) = origins
     }
